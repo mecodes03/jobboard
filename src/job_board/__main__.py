@@ -1,6 +1,6 @@
 import sys
 
-from py import main
+from job_board import main
 
 if __name__ == "__main__":
     sys.exit(main())

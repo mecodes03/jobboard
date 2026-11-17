@@ -17,7 +17,7 @@ from typing import Iterable
 import pandas as pd
 from jobspy import scrape_jobs
 
-from py.proxies import ProxyPool
+from job_board.proxies import ProxyPool
 
 log = logging.getLogger(__name__)
 

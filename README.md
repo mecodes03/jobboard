@@ -1,4 +1,4 @@
-# py
+# job_board
 
 Scrapes job boards with the local [JobSpy fork](../jobspy-py) and writes the results to
 `{timestamp}_JOBS.csv`.
@@ -52,11 +52,11 @@ uv add --editable "jobspy-py @ git+ssh://git@github.com/mecodes03/JobSpy.git"
 ## Usage
 
 ```bash
-uv run py                                  # all 4 sites, 100 results each
-uv run py --sites indeed linkedin --results-wanted 50
-uv run py --search-term "Data Engineer" --location "Austin, TX"
-uv run py --no-proxies                     # skip the proxy pool (fast, often blocked)
-uv run python -m py --help                 # same as `uv run py --help`
+uv run job_board                                # all 5 sites, 100 results each
+uv run job_board --sites indeed linkedin --results-wanted 50
+uv run job_board --search-term "Data Engineer" --location "Austin, TX"
+uv run job_board --no-proxies                   # skip the proxy pool (fast, often blocked)
+uv run python -m job_board --help               # same as `uv run job_board --help`
 ```
 
 Every run writes `YYYYMMDD_HHMMSS_JOBS.csv` to `--output-dir` (default: the current

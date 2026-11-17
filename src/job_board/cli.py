@@ -7,16 +7,16 @@ import logging
 import sys
 from pathlib import Path
 
-from py.proxies import ProxyPool
-from py.scraper import DEFAULT_SITES, SearchQuery, combine, scrape_all
-from py.storage import write_jobs
+from job_board.proxies import ProxyPool
+from job_board.scraper import DEFAULT_SITES, SearchQuery, combine, scrape_all
+from job_board.storage import write_jobs
 
-log = logging.getLogger("py")
+log = logging.getLogger("job_board")
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="py",
+        prog="job_board",
         description="Scrape job boards and save the results to a timestamped CSV.",
     )
     parser.add_argument("--search-term", default="Software Engineer", help="job title to search for")
