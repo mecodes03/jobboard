@@ -7,8 +7,9 @@ import logging
 import sys
 from pathlib import Path
 
-from job_board.proxies import ProxyPool
-from job_board.scraper import DEFAULT_SITES, SearchQuery, combine, scrape_all
+from job_board.models import ScrapeJob
+from job_board.runner import run_scrape
+from job_board.scraper import DEFAULT_SITES, SearchQuery
 from job_board.storage import write_jobs
 
 log = logging.getLogger("job_board")
@@ -78,18 +79,17 @@ def main(argv: list[str] | None = None) -> int:
         country_indeed=args.country_indeed,
     )
 
-    pool: ProxyPool | None = None
-    if not args.no_proxies and args.attempts > 1:
-        pool = ProxyPool(target_size=args.pool_size)
-        log.info("collecting proxies...")
-        available = pool.refresh()
-        log.info("%d working proxies in the pool", available)
-        if not available:
-            log.warning("no working proxies found; retries will use a direct connection")
+    job = ScrapeJob(
+        query=query,
+        sites=tuple(args.sites),
+        attempts=args.attempts,
+        backoff=args.backoff,
+        use_proxies=not args.no_proxies,
+        pool_size=args.pool_size,
+    )
+    report = run_scrape(job)
 
-    results = scrape_all(args.sites, query, pool, attempts=args.attempts, backoff=args.backoff)
-
-    for result in results:
+    for result in report.sites:
         if result.ok:
             log.info("%-14s %4d jobs  (%d attempt%s)", result.site, len(result.jobs),
                      result.attempts, "s" if result.attempts != 1 else "")
@@ -97,13 +97,12 @@ def main(argv: list[str] | None = None) -> int:
             log.warning("%-14s FAILED after %d attempt%s: %s", result.site,
                         result.attempts, "s" if result.attempts != 1 else "", result.error)
 
-    jobs = combine(results)
-    if jobs.empty:
+    if report.jobs.empty:
         log.error("no jobs found on any site; nothing written")
         return 1
 
-    path = write_jobs(jobs, args.output_dir)
-    print(f"Saved {len(jobs)} jobs to {path}")
+    path = write_jobs(report.jobs, args.output_dir)
+    print(f"Saved {len(report.jobs)} jobs to {path}")
     return 0
 
 

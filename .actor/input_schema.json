@@ -1,0 +1,106 @@
+{
+    "title": "Job board scraper input",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "searchTerm": {
+            "title": "Search term",
+            "type": "string",
+            "description": "Job title to search for, e.g. \"Data Engineer\".",
+            "editor": "textfield",
+            "default": "Software Engineer",
+            "minLength": 1,
+            "maxLength": 200
+        },
+        "location": {
+            "title": "Location",
+            "type": "string",
+            "description": "Where to search. Free text, e.g. \"Austin, TX\" or \"Berlin\".",
+            "editor": "textfield",
+            "default": "San Francisco, CA",
+            "minLength": 1,
+            "maxLength": 200
+        },
+        "sites": {
+            "title": "Job boards",
+            "type": "array",
+            "description": "Boards to scrape. Each one is scraped and retried independently.",
+            "editor": "stringList",
+            "items": {
+                "type": "string",
+                "enum": [
+                    "linkedin",
+                    "indeed",
+                    "zip_recruiter",
+                    "glassdoor",
+                    "bayt",
+                    "naukri",
+                    "bdjobs",
+                    "hellowork",
+                    "workindia",
+                    "apna",
+                    "jobhai",
+                    "hirist"
+                ]
+            },
+            "uniqueItems": true,
+            "default": ["indeed", "linkedin", "zip_recruiter", "glassdoor", "naukri"]
+        },
+        "resultsWanted": {
+            "title": "Results per board",
+            "type": "integer",
+            "description": "Maximum postings to request from each board.",
+            "default": 100,
+            "minimum": 1,
+            "maximum": 1000
+        },
+        "hoursOld": {
+            "title": "Posted within (hours)",
+            "type": "integer",
+            "description": "Only keep postings newer than this many hours.",
+            "default": 72,
+            "minimum": 1,
+            "maximum": 2160
+        },
+        "countryIndeed": {
+            "title": "Indeed country",
+            "type": "string",
+            "description": "Country used for Indeed's search, e.g. USA, UK, germany.",
+            "editor": "textfield",
+            "default": "USA",
+            "minLength": 2,
+            "maxLength": 64
+        },
+        "attempts": {
+            "title": "Attempts per board",
+            "type": "integer",
+            "description": "How many times to try a board before giving up. Retries rotate through the proxy pool.",
+            "default": 3,
+            "minimum": 1,
+            "maximum": 10
+        },
+        "backoff": {
+            "title": "Backoff (seconds)",
+            "type": "number",
+            "description": "Base delay between attempts; grows linearly (2s, 4s, 6s...).",
+            "default": 2,
+            "minimum": 0,
+            "maximum": 60
+        },
+        "useProxies": {
+            "title": "Use free proxies on retries",
+            "type": "boolean",
+            "description": "Validate a small pool of free proxies and rotate them when a board blocks the direct request. Disable for fast, deterministic runs.",
+            "default": true
+        },
+        "poolSize": {
+            "title": "Proxy pool size",
+            "type": "integer",
+            "description": "How many working proxies to keep validated.",
+            "default": 6,
+            "minimum": 1,
+            "maximum": 50
+        }
+    },
+    "required": []
+}

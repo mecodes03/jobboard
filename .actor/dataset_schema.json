@@ -1,0 +1,42 @@
+{
+    "actorSpecification": 1,
+    "fields": {},
+    "views": {
+        "overview": {
+            "title": "Jobs",
+            "transformation": {
+                "fields": [
+                    "title",
+                    "company",
+                    "location",
+                    "site",
+                    "job_type",
+                    "is_remote",
+                    "min_amount",
+                    "max_amount",
+                    "currency",
+                    "date_posted",
+                    "job_url"
+                ]
+            },
+            "display": {
+                "component": "table",
+                "properties": {
+                    "columns": [
+                        { "label": "Title", "field": "title", "format": "text" },
+                        { "label": "Company", "field": "company", "format": "text" },
+                        { "label": "Location", "field": "location", "format": "text" },
+                        { "label": "Board", "field": "site", "format": "text" },
+                        { "label": "Type", "field": "job_type", "format": "text" },
+                        { "label": "Remote", "field": "is_remote", "format": "boolean" },
+                        { "label": "Min", "field": "min_amount", "format": "number" },
+                        { "label": "Max", "field": "max_amount", "format": "number" },
+                        { "label": "Currency", "field": "currency", "format": "text" },
+                        { "label": "Posted", "field": "date_posted", "format": "date" },
+                        { "label": "URL", "field": "job_url", "format": "link" }
+                    ]
+                }
+            }
+        }
+    }
+}

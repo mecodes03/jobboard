@@ -1,0 +1,607 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "job_board",
+    "summary": "Scrape public job boards over HTTP.",
+    "description": "Wraps the bundled [JobSpy](https://github.com/mecodes03/JobSpy) fork. Each site is scraped in its own thread and retried independently, so one blocked board never costs you the others. Full five-site runs can take a few minutes; raise `JOB_BOARD_TIMEOUT` if you need to.",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Liveness probe",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Health Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sites": {
+      "get": {
+        "summary": "Supported job boards",
+        "operationId": "sites_sites_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "type": "object",
+                  "title": "Response Sites Sites Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/scrape": {
+      "post": {
+        "summary": "Scrape and return JSON",
+        "operationId": "scrape_scrape_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScrapeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScrapeResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Every site failed (blocked, proxies dead, upstream down)."
+          },
+          "504": {
+            "description": "Scrape exceeded JOB_BOARD_TIMEOUT."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Scrape via query string",
+        "description": "Same as ``POST /scrape`` but callable from a browser or plain ``curl``.\n\nRepeat ``sites`` to scrape more than one board: ``?sites=indeed&sites=linkedin``.",
+        "operationId": "scrape_get_scrape_get",
+        "parameters": [
+          {
+            "name": "search_term",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "examples": [
+                "Data Engineer"
+              ],
+              "default": "Software Engineer",
+              "title": "Search Term"
+            }
+          },
+          {
+            "name": "location",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "examples": [
+                "Austin, TX"
+              ],
+              "default": "San Francisco, CA",
+              "title": "Location"
+            }
+          },
+          {
+            "name": "sites",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "default": [
+                "indeed",
+                "linkedin",
+                "zip_recruiter",
+                "glassdoor",
+                "naukri"
+              ],
+              "title": "Sites"
+            }
+          },
+          {
+            "name": "results_wanted",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000,
+              "minimum": 1,
+              "default": 100,
+              "title": "Results Wanted"
+            }
+          },
+          {
+            "name": "hours_old",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 2160,
+              "minimum": 1,
+              "default": 72,
+              "title": "Hours Old"
+            }
+          },
+          {
+            "name": "country_indeed",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 64,
+              "default": "USA",
+              "title": "Country Indeed"
+            }
+          },
+          {
+            "name": "attempts",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 10,
+              "minimum": 1,
+              "description": "Attempts per site; retries rotate proxies.",
+              "default": 3,
+              "title": "Attempts"
+            },
+            "description": "Attempts per site; retries rotate proxies."
+          },
+          {
+            "name": "backoff",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "maximum": 60,
+              "minimum": 0,
+              "description": "Seconds between attempts.",
+              "default": 2.0,
+              "title": "Backoff"
+            },
+            "description": "Seconds between attempts."
+          },
+          {
+            "name": "use_proxies",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Validate and rotate free proxies on retries.",
+              "default": true,
+              "title": "Use Proxies"
+            },
+            "description": "Validate and rotate free proxies on retries."
+          },
+          {
+            "name": "pool_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "default": 6,
+              "title": "Pool Size"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScrapeResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Every site failed (blocked, proxies dead, upstream down)."
+          },
+          "504": {
+            "description": "Scrape exceeded JOB_BOARD_TIMEOUT."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/scrape.csv": {
+      "post": {
+        "summary": "Scrape and download a CSV",
+        "operationId": "scrape_csv_scrape_csv_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScrapeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The scraped jobs as CSV.",
+            "content": {
+              "text/csv": {}
+            }
+          },
+          "502": {
+            "description": "Every site failed (blocked, proxies dead, upstream down)."
+          },
+          "504": {
+            "description": "Scrape exceeded JOB_BOARD_TIMEOUT."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ScrapeRequest": {
+        "properties": {
+          "search_term": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Search Term",
+            "default": "Software Engineer",
+            "examples": [
+              "Data Engineer"
+            ]
+          },
+          "location": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Location",
+            "default": "San Francisco, CA",
+            "examples": [
+              "Austin, TX"
+            ]
+          },
+          "sites": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Sites",
+            "default": [
+              "indeed",
+              "linkedin",
+              "zip_recruiter",
+              "glassdoor",
+              "naukri"
+            ]
+          },
+          "results_wanted": {
+            "type": "integer",
+            "maximum": 1000.0,
+            "minimum": 1.0,
+            "title": "Results Wanted",
+            "default": 100
+          },
+          "hours_old": {
+            "type": "integer",
+            "maximum": 2160.0,
+            "minimum": 1.0,
+            "title": "Hours Old",
+            "default": 72
+          },
+          "country_indeed": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 2,
+            "title": "Country Indeed",
+            "default": "USA"
+          },
+          "attempts": {
+            "type": "integer",
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "title": "Attempts",
+            "description": "Attempts per site; retries rotate proxies.",
+            "default": 3
+          },
+          "backoff": {
+            "type": "number",
+            "maximum": 60.0,
+            "minimum": 0.0,
+            "title": "Backoff",
+            "description": "Seconds between attempts.",
+            "default": 2.0
+          },
+          "use_proxies": {
+            "type": "boolean",
+            "title": "Use Proxies",
+            "description": "Validate and rotate free proxies on retries.",
+            "default": true
+          },
+          "pool_size": {
+            "type": "integer",
+            "maximum": 50.0,
+            "minimum": 1.0,
+            "title": "Pool Size",
+            "default": 6
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ScrapeRequest",
+        "description": "Body of ``POST /scrape`` and the source of Actor input validation."
+      },
+      "ScrapeResponse": {
+        "properties": {
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "elapsed_ms": {
+            "type": "integer",
+            "title": "Elapsed Ms"
+          },
+          "all_failed": {
+            "type": "boolean",
+            "title": "All Failed"
+          },
+          "sites": {
+            "items": {
+              "$ref": "#/components/schemas/SiteReport"
+            },
+            "type": "array",
+            "title": "Sites"
+          },
+          "jobs": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Jobs"
+          }
+        },
+        "type": "object",
+        "required": [
+          "count",
+          "elapsed_ms",
+          "all_failed",
+          "sites",
+          "jobs"
+        ],
+        "title": "ScrapeResponse",
+        "description": "Body of a successful ``POST /scrape``."
+      },
+      "SiteReport": {
+        "properties": {
+          "site": {
+            "type": "string",
+            "title": "Site"
+          },
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "jobs": {
+            "type": "integer",
+            "title": "Jobs"
+          },
+          "attempts": {
+            "type": "integer",
+            "title": "Attempts"
+          },
+          "proxy": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proxy"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          }
+        },
+        "type": "object",
+        "required": [
+          "site",
+          "ok",
+          "jobs",
+          "attempts"
+        ],
+        "title": "SiteReport",
+        "description": "Outcome for a single job board."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

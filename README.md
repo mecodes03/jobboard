@@ -62,6 +62,128 @@ uv run python -m job_board --help               # same as `uv run job_board --he
 Every run writes `YYYYMMDD_HHMMSS_JOBS.csv` to `--output-dir` (default: the current
 directory). The CSV is ignored by git.
 
+## HTTP API
+
+The API is FastAPI. Install the extra once:
+
+```bash
+uv sync --extra api
+uv run job_board-api                            # http://0.0.0.0:4321, docs at /docs
+# or: uv run uvicorn job_board.api:app --port 4321
+```
+
+| Endpoint | What it does |
+| --- | --- |
+| `GET /health` | Version, JobSpy version, supported boards |
+| `GET /sites` | Boards you can pass to `sites` |
+| `POST /scrape` | Body of scrape params, returns `{count, elapsed_ms, all_failed, sites[], jobs[]}` |
+| `GET /scrape` | Same, with query params (`?sites=indeed&search_term=SRE`) |
+| `POST /scrape.csv` | Same body, returns a CSV attachment |
+
+```bash
+curl -X POST localhost:4321/scrape \
+  -H 'content-type: application/json' \
+  -d '{"sites":["indeed"],"search_term":"python developer","location":"Austin, TX",
+       "results_wanted":5,"attempts":1,"use_proxies":false}' | jq '.count'
+
+# same thing over the query string; repeat `sites` for several boards
+curl 'localhost:4321/scrape?sites=indeed&sites=linkedin&search_term=SRE&results_wanted=5'
+```
+
+Request fields mirror the CLI flags (`sites`, `results_wanted`, `hours_old`,
+`country_indeed`, `attempts`, `backoff`, `use_proxies`, `pool_size`) plus
+`search_term`/`location`. Unknown boards, out-of-range limits and unknown fields are
+rejected with `422`.
+
+Response semantics:
+
+| Status | Meaning |
+| --- | --- |
+| `200` | Scrape ran; inspect `count` and per-board `sites[]` |
+| `404` | (`/scrape.csv` only) ran fine, nothing matched |
+| `422` | Bad request |
+| `502` | Every board failed; body is the same shape as a success |
+| `504` | Exceeded `JOB_BOARD_TIMEOUT` |
+
+Configuration:
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `PORT` | `4321` | Listen port |
+| `JOB_BOARD_API_TOKEN` | unset | When set, require `Authorization: Bearer <token>` |
+| `JOB_BOARD_MAX_CONCURRENCY` | `2` | Scrapes allowed to run at once |
+| `JOB_BOARD_TIMEOUT` | `600` | Per-request wall clock limit, seconds |
+
+> A scrape is synchronous from the caller's point of view: a five-board, 100-result run
+> can take minutes. Raise `JOB_BOARD_TIMEOUT` (and your proxy's timeout) rather than
+> hammering the endpoint.
+
+## Docker
+
+The image is a single artifact that works both as a web server and as an Apify Actor.
+It repoints the `../jobspy-py` path dependency at the git fork and the Tsinghua mirror
+at PyPI at build time.
+
+```bash
+docker build -t job-board .
+docker run --rm -p 4321:4321 -e JOB_BOARD_API_TOKEN=secret job-board
+curl localhost:4321/health
+```
+
+## Apify
+
+`.actor/` holds the deployment definition (`usesStandbyMode: true`, input schema,
+dataset and key-value-store schemas, and an OpenAPI spec generated from the API).
+
+```bash
+npm i -g apify-cli          # once
+apify login                 # once
+apify push                  # builds the root Dockerfile on Apify
+```
+
+The same image behaves differently depending on how it is started, so you get both
+contracts without a second build:
+
+- **Regular run** (`apify call`, schedules, Console): reads `INPUT`, scrapes, pushes one
+  dataset item per posting, and stores the CSV as `OUTPUT` plus the per-board summary as
+  `REPORT` in the key-value store.
+- **Standby** (Apify sets `ACTOR_STANDBY_PORT`): serves the API on the platform's port,
+  so the endpoints above are reachable at `https://USER--job-board-scraper.apify.actor`
+  with an Apify token.
+
+Test the Actor contract locally without an Apify account:
+
+```bash
+export APIFY_LOCAL_STORAGE_DIR=/tmp/actor-store
+mkdir -p "$APIFY_LOCAL_STORAGE_DIR/key_value_stores/default"
+echo '{"searchTerm":"devops","location":"Austin, TX","sites":["indeed"],
+       "resultsWanted":2,"attempts":1,"useProxies":false}' \
+  > "$APIFY_LOCAL_STORAGE_DIR/key_value_stores/default/INPUT.json"
+uv run --extra apify python -m job_board.actor
+cat "$APIFY_LOCAL_STORAGE_DIR/key_value_stores/default/REPORT"
+
+# Standby mode, same image:
+ACTOR_STANDBY_PORT=4321 uv run --extra apify python -m job_board.actor
+```
+
+After changing `job_board/api.py`, regenerate the Actor's OpenAPI spec:
+
+```bash
+uv run python scripts/export_openapi.py
+```
+
+## Tests
+
+```bash
+uv sync --extra api --extra apify          # tests import fastapi + apify
+uv run pytest
+uv run pyright
+```
+
+The suite is offline: scraping is monkeypatched, so it runs in ~2s and never hits a job
+board. Coverage is the JSON/CSV normalisation, request validation, retry/pool wiring, the
+HTTP contract (including 401/502/504 and the CSV download) and the Actor input mapping.
+
 ## How failures are handled
 
 - Each site is scraped in its own thread, so a failure never costs you the other sites.

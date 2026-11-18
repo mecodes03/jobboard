@@ -11,3 +11,7 @@ wheels/
 
 # Scrape output
 *_JOBS.csv
+
+# Apify CLI local state and local storages (`apify run`)
+storage/
+.apify/
