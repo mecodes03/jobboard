@@ -3,7 +3,7 @@
 One image, two behaviours, chosen at runtime:
 
 Standby (``ACTOR_STANDBY_PORT`` is set by the platform)
-    Stay up and serve :mod:`job_board.api` on the port Apify hands us. The Actor
+    Stay up and serve :mod:`jobboard.api` on the port Apify hands us. The Actor
     then behaves like a normal REST API at its container URL, with Apify doing
     authentication. Enable it with ``usesStandbyMode`` in ``.actor/actor.json``.
 
@@ -22,9 +22,9 @@ from typing import Any
 from apify import Actor
 from pydantic import ValidationError
 
-from job_board.export import to_csv_bytes, to_records
-from job_board.models import ScrapeRequest, ScrapeResponse
-from job_board.runner import run_scrape
+from jobboard.export import to_csv_bytes, to_records
+from jobboard.models import ScrapeRequest, ScrapeResponse
+from jobboard.runner import run_scrape
 
 CSV_KEY = "OUTPUT"
 REPORT_KEY = "REPORT"
@@ -57,7 +57,7 @@ def request_from_input(data: dict[str, Any] | None) -> ScrapeRequest:
 async def _serve_standby() -> None:
     import uvicorn
 
-    from job_board.api import app
+    from jobboard.api import app
 
     port = Actor.configuration.web_server_port
     Actor.log.info("standby mode: serving the API on port %d", port)

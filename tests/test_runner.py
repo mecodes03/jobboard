@@ -5,9 +5,9 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from job_board import runner
-from job_board.models import ScrapeJob, ScrapeRequest
-from job_board.scraper import SiteResult
+from jobboard import runner
+from jobboard.models import ScrapeJob, ScrapeRequest
+from jobboard.scraper import SiteResult
 
 
 class FakePool:

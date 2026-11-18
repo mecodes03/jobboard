@@ -6,9 +6,9 @@ import pandas as pd
 import pytest
 from pydantic import ValidationError
 
-from job_board import actor, serve
-from job_board.models import ScrapeReport
-from job_board.scraper import DEFAULT_SITES, SiteResult
+from jobboard import actor, serve
+from jobboard.models import ScrapeReport
+from jobboard.scraper import DEFAULT_SITES, SiteResult
 
 
 def test_empty_input_uses_defaults() -> None:
@@ -66,7 +66,7 @@ def test_report_summary_pushed_to_the_key_value_store() -> None:
         elapsed_s=1.5,
     )
 
-    from job_board.models import ScrapeResponse
+    from jobboard.models import ScrapeResponse
 
     summary = ScrapeResponse.from_report(report, []).model_dump(exclude={"jobs"})
 
@@ -81,13 +81,13 @@ def test_report_summary_pushed_to_the_key_value_store() -> None:
         ({}, False),
         ({"APIFY_IS_AT_HOME": "1"}, True),
         ({"ACTOR_RUN_ID": "abc"}, True),
-        ({"JOB_BOARD_MODE": "api", "ACTOR_RUN_ID": "abc"}, False),
-        ({"JOB_BOARD_MODE": "actor"}, True),
+        ({"JOBBOARD_MODE": "api", "ACTOR_RUN_ID": "abc"}, False),
+        ({"JOBBOARD_MODE": "actor"}, True),
         ({"APIFY_LOCAL_STORAGE_DIR": "/tmp/store"}, True),
     ],
 )
 def test_mode_detection(env: dict[str, str], expected: bool, monkeypatch: pytest.MonkeyPatch) -> None:
-    for key in ("APIFY_IS_AT_HOME", "ACTOR_RUN_ID", "JOB_BOARD_MODE", "APIFY_LOCAL_STORAGE_DIR"):
+    for key in ("APIFY_IS_AT_HOME", "ACTOR_RUN_ID", "JOBBOARD_MODE", "APIFY_LOCAL_STORAGE_DIR"):
         monkeypatch.delenv(key, raising=False)
     for key, value in env.items():
         monkeypatch.setenv(key, value)

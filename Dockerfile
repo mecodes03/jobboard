@@ -2,7 +2,7 @@
 
 # One image, two deployment targets:
 #   * Apify Actor  - the platform sets ACTOR_RUN_ID/ACTOR_STANDBY_PORT, so
-#     `job_board.serve` runs the Actor (batch run or Standby API).
+#     `jobboard.serve` runs the Actor (batch run or Standby API).
 #   * Any PaaS     - without those variables it serves the FastAPI app on $PORT.
 FROM apify/actor-python:3.14
 
@@ -40,4 +40,4 @@ EXPOSE 4321
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
     CMD python -c "import sys,urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:4321/health', timeout=4).status == 200 else 1)"
 
-CMD ["python", "-m", "job_board.serve"]
+CMD ["python", "-m", "jobboard.serve"]

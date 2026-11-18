@@ -9,11 +9,11 @@ from __future__ import annotations
 import logging
 import time
 
-from job_board.models import ScrapeJob, ScrapeReport
-from job_board.proxies import ProxyPool
-from job_board.scraper import combine, scrape_all
+from jobboard.models import ScrapeJob, ScrapeReport
+from jobboard.proxies import ProxyPool
+from jobboard.scraper import combine, scrape_all
 
-log = logging.getLogger("job_board.runner")
+log = logging.getLogger("jobboard.runner")
 
 
 def build_pool(job: ScrapeJob) -> ProxyPool | None:

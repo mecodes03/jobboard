@@ -1,9 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "job-board",
+    "title": "jobboard",
     "summary": "Scrape public job boards over HTTP.",
-    "description": "Wraps the bundled [JobSpy](https://github.com/mecodes03/JobSpy) fork. Each site is scraped in its own thread and retried independently, so one blocked board never costs you the others. Full five-site runs can take a few minutes; raise `JOB_BOARD_TIMEOUT` if you need to.",
+    "description": "Wraps the bundled [JobSpy](https://github.com/mecodes03/JobSpy) fork. Each site is scraped in its own thread and retried independently, so one blocked board never costs you the others. Full five-site runs can take a few minutes; raise `JOBBOARD_TIMEOUT` if you need to.",
     "version": "0.1.0"
   },
   "paths": {
@@ -99,7 +99,7 @@
             "description": "Every site failed (blocked, proxies dead, upstream down)."
           },
           "504": {
-            "description": "Scrape exceeded JOB_BOARD_TIMEOUT."
+            "description": "Scrape exceeded JOBBOARD_TIMEOUT."
           },
           "422": {
             "description": "Validation Error",
@@ -288,7 +288,7 @@
             "description": "Every site failed (blocked, proxies dead, upstream down)."
           },
           "504": {
-            "description": "Scrape exceeded JOB_BOARD_TIMEOUT."
+            "description": "Scrape exceeded JOBBOARD_TIMEOUT."
           },
           "422": {
             "description": "Validation Error",
@@ -346,7 +346,7 @@
             "description": "Every site failed (blocked, proxies dead, upstream down)."
           },
           "504": {
-            "description": "Scrape exceeded JOB_BOARD_TIMEOUT."
+            "description": "Scrape exceeded JOBBOARD_TIMEOUT."
           },
           "422": {
             "description": "Validation Error",

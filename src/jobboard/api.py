@@ -1,18 +1,18 @@
 """HTTP API around the scraper.
 
-Run it with ``job-board-api`` (or ``uvicorn job_board.api:app``). The same app is
+Run it with ``jobboard-api`` (or ``uvicorn jobboard.api:app``). The same app is
 served by the Apify Actor when the platform starts it in Standby mode, so every
 endpoint here is also reachable as the Actor's container URL.
 
 Environment variables
 ---------------------
-``JOB_BOARD_API_TOKEN``
+``JOBBOARD_API_TOKEN``
     When set, every scraping endpoint requires ``Authorization: Bearer <token>``.
     Ignored on Apify, where the platform authenticates the caller itself.
-``JOB_BOARD_MAX_CONCURRENCY``
+``JOBBOARD_MAX_CONCURRENCY``
     Scrapes allowed to run at once (default ``2``). Each one is a thread that
     talks to several job boards, so this is a real resource limit.
-``JOB_BOARD_TIMEOUT``
+``JOBBOARD_TIMEOUT``
     Per-request wall clock limit in seconds (default ``600``).
 """
 
@@ -29,19 +29,19 @@ from typing import Annotated, Any
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Response
 from fastapi.responses import JSONResponse
 
-from job_board import __version__
-from job_board.export import to_csv_bytes, to_records
-from job_board.models import (
+from jobboard import __version__
+from jobboard.export import to_csv_bytes, to_records
+from jobboard.models import (
     SUPPORTED_SITES,
     ScrapeRequest,
     ScrapeResponse,
     ScrapeReport,
 )
-from job_board.runner import run_scrape
-from job_board.scraper import DEFAULT_SITES
-from job_board.storage import timestamped_path
+from jobboard.runner import run_scrape
+from jobboard.scraper import DEFAULT_SITES
+from jobboard.storage import timestamped_path
 
-log = logging.getLogger("job_board.api")
+log = logging.getLogger("jobboard.api")
 
 
 def _int_env(name: str, default: int) -> int:
@@ -59,11 +59,11 @@ def _float_env(name: str, default: float) -> float:
 
 
 def _max_concurrency() -> int:
-    return max(1, _int_env("JOB_BOARD_MAX_CONCURRENCY", 2))
+    return max(1, _int_env("JOBBOARD_MAX_CONCURRENCY", 2))
 
 
 def _timeout_s() -> float:
-    return max(1.0, _float_env("JOB_BOARD_TIMEOUT", 600.0))
+    return max(1.0, _float_env("JOBBOARD_TIMEOUT", 600.0))
 
 
 # A Semaphore is bound to the event loop that first waits on it. Tests (and
@@ -97,7 +97,7 @@ async def require_auth(
         # The Apify platform validates its own API token before forwarding.
         return
 
-    expected = os.environ.get("JOB_BOARD_API_TOKEN")
+    expected = os.environ.get("JOBBOARD_API_TOKEN")
     if not expected:
         return
 
@@ -113,20 +113,20 @@ async def require_auth(
 Auth = Annotated[None, Depends(require_auth)]
 
 app = FastAPI(
-    title="job-board",
+    title="jobboard",
     version=__version__,
     summary="Scrape public job boards over HTTP.",
     description=(
         "Wraps the bundled [JobSpy](https://github.com/mecodes03/JobSpy) fork. "
         "Each site is scraped in its own thread and retried independently, so one "
         "blocked board never costs you the others. Full five-site runs can take a "
-        "few minutes; raise `JOB_BOARD_TIMEOUT` if you need to."
+        "few minutes; raise `JOBBOARD_TIMEOUT` if you need to."
     ),
 )
 
 _SCRAPE_ERRORS: dict[int | str, dict[str, Any]] = {
     502: {"description": "Every site failed (blocked, proxies dead, upstream down)."},
-    504: {"description": "Scrape exceeded JOB_BOARD_TIMEOUT."},
+    504: {"description": "Scrape exceeded JOBBOARD_TIMEOUT."},
 }
 
 
@@ -164,7 +164,7 @@ async def _report(request: ScrapeRequest) -> ScrapeReport:
 @app.get("/", include_in_schema=False)
 def index() -> dict[str, Any]:
     return {
-        "name": "job-board",
+        "name": "jobboard",
         "version": __version__,
         "docs": "/docs",
         "openapi": "/openapi.json",

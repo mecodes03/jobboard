@@ -2,7 +2,7 @@
 
 Apify validates this file at build time and renders it as the Actor's **Server**
 tab, so it has to be kept in sync with the endpoints. Run it after changing
-job_board.api:
+jobboard.api:
 
     uv run python scripts/export_openapi.py
 """
@@ -12,7 +12,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from job_board.api import app
+from jobboard.api import app
 
 TARGET = Path(__file__).resolve().parents[1] / ".actor" / "openapi.json"
 

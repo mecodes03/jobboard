@@ -5,8 +5,8 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from job_board.models import SUPPORTED_SITES, ScrapeRequest, SiteReport
-from job_board.scraper import DEFAULT_SITES, SiteResult
+from jobboard.models import SUPPORTED_SITES, ScrapeRequest, SiteReport
+from jobboard.scraper import DEFAULT_SITES, SiteResult
 
 
 def test_defaults_match_the_cli() -> None:

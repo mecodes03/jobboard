@@ -8,9 +8,9 @@ import pandas as pd
 import pytest
 from fastapi.testclient import TestClient
 
-from job_board import api
-from job_board.models import ScrapeReport
-from job_board.scraper import SiteResult
+from jobboard import api
+from jobboard.models import ScrapeReport
+from jobboard.scraper import SiteResult
 
 SAMPLE = pd.DataFrame(
     {
@@ -42,7 +42,7 @@ def client(monkeypatch: pytest.MonkeyPatch) -> TestClient:
 
 @pytest.fixture(autouse=True)
 def _clean_env(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.delenv("JOB_BOARD_API_TOKEN", raising=False)
+    monkeypatch.delenv("JOBBOARD_API_TOKEN", raising=False)
     monkeypatch.delenv("APIFY_IS_AT_HOME", raising=False)
 
 
@@ -167,7 +167,7 @@ def test_csv_with_no_matches_is_a_404(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_token_is_required_when_configured(
     client: TestClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setenv("JOB_BOARD_API_TOKEN", "s3cret")
+    monkeypatch.setenv("JOBBOARD_API_TOKEN", "s3cret")
 
     assert client.post("/scrape", json={}).status_code == 401
     assert client.post("/scrape", json={}, headers={"Authorization": "Bearer wrong"}).status_code == 401
@@ -179,7 +179,7 @@ def test_token_is_required_when_configured(
 def test_apify_defers_authentication_to_the_platform(
     client: TestClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setenv("JOB_BOARD_API_TOKEN", "s3cret")
+    monkeypatch.setenv("JOBBOARD_API_TOKEN", "s3cret")
     monkeypatch.setenv("APIFY_IS_AT_HOME", "1")
 
     assert client.post("/scrape", json={}).status_code == 200

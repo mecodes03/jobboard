@@ -8,7 +8,7 @@ from datetime import date, datetime
 import numpy as np
 import pandas as pd
 
-from job_board.export import to_csv_bytes, to_records
+from jobboard.export import to_csv_bytes, to_records
 
 
 def test_empty_frame_gives_no_records() -> None:

@@ -18,7 +18,7 @@ Every posting lands in the default dataset, and the same rows are saved as
 so the same container serves the API. Hit the Actor's Standby URL with your Apify token:
 
 ```bash
-curl "https://USER--job-board-scraper.apify.actor/scrape?sites=indeed&search_term=Data%20Engineer&results_wanted=25" \
+curl "https://USER--jobboard-scraper.apify.actor/scrape?sites=indeed&search_term=Data%20Engineer&results_wanted=25" \
   -H "Authorization: Bearer $APIFY_TOKEN"
 ```
 

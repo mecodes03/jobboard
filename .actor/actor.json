@@ -1,7 +1,7 @@
 {
     "$schema": "https://apify.com/schemas/v1/actor.ide.json",
     "actorSpecification": 1,
-    "name": "job-board-scraper",
+    "name": "jobboard-scraper",
     "title": "Job Board Scraper",
     "description": "Scrape Indeed, LinkedIn, Glassdoor, ZipRecruiter, Naukri and more in one run. Each board is retried independently, so a blocked site never costs you the others. Also serves the same scraper as a REST API in Standby mode.",
     "version": "0.1",

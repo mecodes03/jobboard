@@ -13,7 +13,7 @@ import pandas as pd
 from jobspy.model import Site
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from job_board.scraper import DEFAULT_SITES, SearchQuery, SiteResult
+from jobboard.scraper import DEFAULT_SITES, SearchQuery, SiteResult
 
 # Derived from the bundled JobSpy fork so the two lists can never drift.
 # Google is excluded: its scraper needs ``google_search_term`` rather than
@@ -23,7 +23,7 @@ SUPPORTED_SITES: tuple[str, ...] = tuple(s.value for s in Site if s is not Site.
 
 @dataclass(frozen=True, slots=True)
 class ScrapeJob:
-    """A fully-resolved scrape, ready to hand to :func:`job_board.runner.run_scrape`."""
+    """A fully-resolved scrape, ready to hand to :func:`jobboard.runner.run_scrape`."""
 
     query: SearchQuery = SearchQuery()
     sites: tuple[str, ...] = DEFAULT_SITES

@@ -7,17 +7,17 @@ import logging
 import sys
 from pathlib import Path
 
-from job_board.models import ScrapeJob
-from job_board.runner import run_scrape
-from job_board.scraper import DEFAULT_SITES, SearchQuery
-from job_board.storage import write_jobs
+from jobboard.models import ScrapeJob
+from jobboard.runner import run_scrape
+from jobboard.scraper import DEFAULT_SITES, SearchQuery
+from jobboard.storage import write_jobs
 
-log = logging.getLogger("job_board")
+log = logging.getLogger("jobboard")
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="job-board",
+        prog="jobboard",
         description="Scrape job boards and save the results to a timestamped CSV.",
     )
     parser.add_argument("--search-term", default="Software Engineer", help="job title to search for")

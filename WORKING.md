@@ -1,6 +1,6 @@
 # WORKING.md — how this project works
 
-This document explains the architecture of `job-board`: what each file does, how the
+This document explains the architecture of `jobboard`: what each file does, how the
 pieces connect, and what happens on a real scrape. It assumes you're new to Python,
 so concepts are explained the first time they matter.
 
@@ -8,7 +8,7 @@ so concepts are explained the first time they matter.
 
 ## 1. What this project does
 
-`job-board` scrapes job postings from public job boards (Indeed, LinkedIn,
+`jobboard` scrapes job postings from public job boards (Indeed, LinkedIn,
 Glassdoor, ZipRecruiter, Naukri) and saves them to a timestamped CSV file:
 
 ```
@@ -19,8 +19,8 @@ Glassdoor, ZipRecruiter, Naukri) and saves them to a timestamped CSV file:
 It can be triggered **three different ways**, and all three share the exact same
 scraping engine:
 
-1. **CLI** — run it in your terminal: `uv run job-board`
-2. **HTTP API** — a web server you can `curl`: `uv run job-board-api`
+1. **CLI** — run it in your terminal: `uv run jobboard`
+2. **HTTP API** — a web server you can `curl`: `uv run jobboard-api`
 3. **Apify Actor** — a cloud-scraping platform integration: deployed via Docker
 
 The actual scraping is done by an external library called **JobSpy** (a fork living
@@ -74,11 +74,11 @@ You'll meet these repeatedly. Each maps to real code in this repo:
 
 | Concept | What it means | Where you see it |
 |---|---|---|
-| **module** | Any single `.py` file. `from job_board.cli import main` = "from the `cli.py` file inside the `job_board` folder, grab the `main` function". | everywhere |
-| **package** | A folder of modules with an `__init__.py`. `job_board` is the package; importing it runs `__init__.py` first. (The project is named `job-board`, but Python import names can't contain hyphens, so imports always use `job_board`.) | `src/job_board/` |
-| **src layout** | Code lives in `src/`, not at the repo root. When you `uv sync`, the package gets *installed* into `.venv`, which is why `import job_board` works from anywhere. | `pyproject.toml` |
-| **entry point** | A command that gets created in `.venv/bin/` when the package is installed. Defined in `[project.scripts]`. `job-board = "job_board:main"` means: the terminal command `job-board` calls the function `main()` in the `job_board` package. | `pyproject.toml` |
-| **`__main__.py`** | A special file that makes `python -m job_board` work. Python looks for it when you run a package with `-m`. | `src/job_board/__main__.py` |
+| **module** | Any single `.py` file. `from jobboard.cli import main` = "from the `cli.py` file inside the `jobboard` folder, grab the `main` function". | everywhere |
+| **package** | A folder of modules with an `__init__.py`. `jobboard` is the package; importing it runs `__init__.py` first. Project, commands and imports all share the single spelling `jobboard`. | `src/jobboard/` |
+| **src layout** | Code lives in `src/`, not at the repo root. When you `uv sync`, the package gets *installed* into `.venv`, which is why `import jobboard` works from anywhere. | `pyproject.toml` |
+| **entry point** | A command that gets created in `.venv/bin/` when the package is installed. Defined in `[project.scripts]`. `jobboard = "jobboard:main"` means: the terminal command `jobboard` calls the function `main()` in the `jobboard` package. | `pyproject.toml` |
+| **`__main__.py`** | A special file that makes `python -m jobboard` work. Python looks for it when you run a package with `-m`. | `src/jobboard/__main__.py` |
 | **dataclass** | A class whose job is mostly *holding data* — the `@dataclass` decorator auto-generates the constructor. `frozen=True` = can't be modified after creation. | `models.py`, `scraper.py` |
 | **Pydantic model** | A class that *validates* data at runtime. If the input is wrong (bad site name, out-of-range number), it raises an error with a helpful message. Used at every boundary where outside data enters. | `models.py` |
 | **pandas DataFrame** | A spreadsheet in memory: rows and named columns. JobSpy returns scraped jobs as one. `df.empty`, `df.to_csv()`, `pd.concat()` are operations on that spreadsheet. | `scraper.py`, `storage.py` |
@@ -87,16 +87,16 @@ You'll meet these repeatedly. Each maps to real code in this repo:
 | **decorator** | `@something` above a function wraps/modifies it. `@app.get("/health")` registers the function below it as an HTTP endpoint. | `api.py` |
 | **`uv`** | The package manager this project uses. `uv sync` creates `.venv` and installs dependencies; `uv run X` runs command `X` inside that virtual environment. | everywhere |
 | **editable install** | The JobSpy fork at `../jobspy-py` is installed "editable", meaning Python imports it *directly from that folder* — edit the fork's code and the changes are live here with no reinstall. | `pyproject.toml` |
-| **`__pycache__/`** | Auto-generated compiled bytecode. It's a cache — safe to ignore and delete, and it's git-ignored. | `src/job_board/__pycache__/` |
+| **`__pycache__/`** | Auto-generated compiled bytecode. It's a cache — safe to ignore and delete, and it's git-ignored. | `src/jobboard/__pycache__/` |
 
 ---
 
 ## 4. File map
 
 ```
-src/job_board/
+src/jobboard/
 ├── __init__.py      # package front page: re-exports the public functions
-├── __main__.py      # makes `python -m job_board` work (delegates to cli.main)
+├── __main__.py      # makes `python -m jobboard` work (delegates to cli.main)
 ├── cli.py           # front door 1: terminal flags → ScrapeJob → CSV file
 ├── api.py           # front door 2: HTTP endpoints (FastAPI app)
 ├── actor.py         # front door 3: Apify Actor (batch job or standby API server)
@@ -221,10 +221,10 @@ and returns it. It has *no idea* which front door called it.
 
 ### 7a. CLI — `cli.py`
 
-Entry: the `job-board` command (from `pyproject.toml`) or `python -m job_board`.
+Entry: the `jobboard` command (from `pyproject.toml`) or `python -m jobboard`.
 
 ```
-uv run job-board --sites indeed linkedin --results-wanted 50 --search-term "SRE"
+uv run jobboard --sites indeed linkedin --results-wanted 50 --search-term "SRE"
 ```
 
 `main()` does:
@@ -244,7 +244,7 @@ to see everything.
 
 ### 7b. HTTP API — `api.py`
 
-Entry: the `job-board-api` command, or `uvicorn job_board.api:app`.
+Entry: the `jobboard-api` command, or `uvicorn jobboard.api:app`.
 
 | Endpoint | Method | Does |
 |---|---|---|
@@ -259,19 +259,19 @@ How it works inside:
 - `@app.post("/scrape")` registers the function as an endpoint; FastAPI
   **validates the JSON body against `ScrapeRequest`** automatically — bad input
   becomes a `422` with zero custom code.
-- `require_auth` is a *dependency*: if `JOB_BOARD_API_TOKEN` is set, requests must
+- `require_auth` is a *dependency*: if `JOBBOARD_API_TOKEN` is set, requests must
   carry `Authorization: Bearer <token>` or get `401`. It's skipped when the token
   is unset, and on Apify (the platform authenticates callers itself).
 - The scrape is **blocking and slow**, so it runs on a worker thread
   (`asyncio.to_thread`) while the server stays responsive. Two guards wrap it:
-  - a `Semaphore` limits concurrent scrapes to `JOB_BOARD_MAX_CONCURRENCY` (default 2),
-  - `asyncio.wait_for` enforces `JOB_BOARD_TIMEOUT` seconds (default 600) → `504` if exceeded.
+  - a `Semaphore` limits concurrent scrapes to `JOBBOARD_MAX_CONCURRENCY` (default 2),
+  - `asyncio.wait_for` enforces `JOBBOARD_TIMEOUT` seconds (default 600) → `504` if exceeded.
 - Status codes: `200` ran (check `count`), `502` every site failed (body still has
   the same shape, so clients parse one thing), `404` (`/scrape.csv` only) ran fine
   but nothing matched, `422` bad request.
 
 `serve.py` is the **container entrypoint**: at startup it checks environment
-variables — `JOB_BOARD_MODE=api/actor`, or Apify's `ACTOR_RUN_ID` /
+variables — `JOBBOARD_MODE=api/actor`, or Apify's `ACTOR_RUN_ID` /
 `ACTOR_STANDBY_PORT` / `APIFY_LOCAL_STORAGE_DIR` — and either launches uvicorn
 with the API (default host `0.0.0.0`, port `PORT` or `4321`) or runs the Actor.
 
@@ -369,7 +369,7 @@ Everything else that references it adapts at build time:
 | Section | Meaning |
 |---|---|
 | `[project]` | name, version, required Python (≥3.14), runtime deps (`jobspy-py`, `pandas`, `requests`) |
-| `[project.scripts]` | terminal commands → functions: `job-board`, `job-board-api`, `job-board-actor` |
+| `[project.scripts]` | terminal commands → functions: `jobboard`, `jobboard-api`, `jobboard-actor` |
 | `[project.optional-dependencies]` | **extras**: `api` (fastapi, uvicorn), `apify` (apify SDK). Extras keep heavy deps off a plain CLI install — `uv sync --extra api` adds them. |
 | `[dependency-groups]` | `dev` tools (pytest, httpx, pyright…) that never ship to production |
 | `[tool.uv.sources]` | the editable path to the JobSpy fork |
@@ -403,7 +403,7 @@ The `Dockerfile` builds a single image that works everywhere:
 3. `uv sync` installs dependencies, then source is copied in last — so everyday
    code edits rebuild fast (dependency layers stay cached).
 4. `HEALTHCHECK` pokes `/health` (only meaningful in API mode; Apify ignores it).
-5. `CMD python -m job_board.serve` → `serve.py` **decides at runtime**:
+5. `CMD python -m jobboard.serve` → `serve.py` **decides at runtime**:
    Apify env vars present → Actor mode; absent → API server on `$PORT`.
 
 So the same image runs on your laptop (API), on Railway/Fly (API), and on Apify
@@ -433,7 +433,7 @@ This is the payoff of the layered design: because all front doors funnel through
 
 `curl -X POST localhost:4321/scrape -d '{"sites":["indeed"],"search_term":"python developer","location":"Austin, TX","results_wanted":5,"attempts":3,"use_proxies":false}'`
 
-1. **uvicorn** (started by `job-board-api`) receives the request on its event loop.
+1. **uvicorn** (started by `jobboard-api`) receives the request on its event loop.
 2. FastAPI matches `POST /scrape` → `scrape()` and **validates the body against
    `ScrapeRequest`**. Unknown field? Bad site? → `422`, no scrape code touched.
 3. The `require_auth` dependency checks the bearer token (if configured).
