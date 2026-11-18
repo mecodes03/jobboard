@@ -648,6 +648,7 @@ name = "jobboard"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "apify" },
     { name = "jobspy-py" },
     { name = "pandas" },
     { name = "requests" },
@@ -672,6 +673,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "apify", specifier = ">=4.2.1" },
     { name = "apify", marker = "extra == 'apify'", specifier = ">=4.2.1" },
     { name = "fastapi", marker = "extra == 'api'", specifier = ">=0.163.1" },
     { name = "jobspy-py", editable = "../jobspy-py" },

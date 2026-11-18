@@ -25,7 +25,7 @@
             "title": "Job boards",
             "type": "array",
             "description": "Boards to scrape. Each one is scraped and retried independently.",
-            "editor": "stringList",
+            "editor": "select",
             "items": {
                 "type": "string",
                 "enum": [

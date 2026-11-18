@@ -1,54 +1,17 @@
 {
-    "actorSpecification": 1,
-    "fields": {
-        "OUTPUT": {
+    "actorKeyValueStoreSchemaVersion": 1,
+    "title": "Job board output",
+    "description": "Files every run writes to the default key-value store.",
+    "collections": {
+        "output": {
             "title": "CSV export",
-            "type": "string",
-            "description": "The same jobs as the dataset, as a UTF-8 CSV with the full 30+ column JobSpy schema."
+            "description": "The same jobs as the dataset, as a UTF-8 CSV with the full 30+ column JobSpy schema.",
+            "key": "OUTPUT"
         },
-        "REPORT": {
+        "report": {
             "title": "Run report",
-            "type": "object",
             "description": "Per-board outcome: rows kept, attempts used, proxy used, and the error for any board that failed.",
-            "schema": {
-                "type": "object",
-                "properties": {
-                    "count": { "type": "integer" },
-                    "elapsed_ms": { "type": "integer" },
-                    "all_failed": { "type": "boolean" },
-                    "sites": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "site": { "type": "string" },
-                                "ok": { "type": "boolean" },
-                                "jobs": { "type": "integer" },
-                                "attempts": { "type": "integer" },
-                                "proxy": { "type": ["string", "null"] },
-                                "error": { "type": ["string", "null"] }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    },
-    "views": {
-        "overview": {
-            "title": "Overview",
-            "transformation": {
-                "fields": ["OUTPUT", "REPORT"]
-            },
-            "display": {
-                "component": "table",
-                "properties": {
-                    "columns": [
-                        { "label": "CSV export", "field": "OUTPUT", "format": "text" },
-                        { "label": "Run report", "field": "REPORT", "format": "object" }
-                    ]
-                }
-            }
+            "key": "REPORT"
         }
     }
 }
