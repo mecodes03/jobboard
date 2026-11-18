@@ -1,5 +1,5 @@
 [project]
-name = "job_board"
+name = "job-board"
 version = "0.1.0"
 description = "Job Board"
 readme = "README.md"
@@ -8,9 +8,9 @@ requires-python = ">=3.14"
 dependencies = ["jobspy-py", "pandas>=3.1.1", "requests>=2.34.2"]
 
 [project.scripts]
-job_board = "job_board:main"
-job_board-api = "job_board.serve:main"
-job_board-actor = "job_board.actor:run"
+job-board = "job_board:main"
+job-board-api = "job_board.serve:main"
+job-board-actor = "job_board.actor:run"
 
 [project.optional-dependencies]
 api = ["fastapi>=0.163.1", "uvicorn[standard]>=0.54.0"]

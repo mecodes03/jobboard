@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "job_board",
+    "title": "job-board",
     "summary": "Scrape public job boards over HTTP.",
     "description": "Wraps the bundled [JobSpy](https://github.com/mecodes03/JobSpy) fork. Each site is scraped in its own thread and retried independently, so one blocked board never costs you the others. Full five-site runs can take a few minutes; raise `JOB_BOARD_TIMEOUT` if you need to.",
     "version": "0.1.0"

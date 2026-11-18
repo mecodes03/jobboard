@@ -1,4 +1,4 @@
-# job_board
+# job-board
 
 Scrapes job boards with the local [JobSpy fork](../jobspy-py) and writes the results to
 `{timestamp}_JOBS.csv`.
@@ -30,7 +30,7 @@ jobspy-py = { path = "../jobspy-py", editable = true }
 
 ```bash
 uv run python -c "import jobspy; print(jobspy.__file__)"
-# /home/mecodes/code/projects/job_board/jobspy-py/jobspy/__init__.py
+# /home/mecodes/code/projects/job-board/jobspy-py/jobspy/__init__.py
 ```
 
 | Change in `jobspy-py` | What to run here |
@@ -52,11 +52,11 @@ uv add --editable "jobspy-py @ git+ssh://git@github.com/mecodes03/JobSpy.git"
 ## Usage
 
 ```bash
-uv run job_board                                # all 5 sites, 100 results each
-uv run job_board --sites indeed linkedin --results-wanted 50
-uv run job_board --search-term "Data Engineer" --location "Austin, TX"
-uv run job_board --no-proxies                   # skip the proxy pool (fast, often blocked)
-uv run python -m job_board --help               # same as `uv run job_board --help`
+uv run job-board                                # all 5 sites, 100 results each
+uv run job-board --sites indeed linkedin --results-wanted 50
+uv run job-board --search-term "Data Engineer" --location "Austin, TX"
+uv run job-board --no-proxies                   # skip the proxy pool (fast, often blocked)
+uv run python -m job_board --help               # same as `uv run job-board --help`
 ```
 
 Every run writes `YYYYMMDD_HHMMSS_JOBS.csv` to `--output-dir` (default: the current
@@ -68,7 +68,7 @@ The API is FastAPI. Install the extra once:
 
 ```bash
 uv sync --extra api
-uv run job_board-api                            # http://0.0.0.0:4321, docs at /docs
+uv run job-board-api                            # http://0.0.0.0:4321, docs at /docs
 # or: uv run uvicorn job_board.api:app --port 4321
 ```
 

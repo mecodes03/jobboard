@@ -38,7 +38,7 @@ def serve_api() -> int:
 
     host = os.environ.get("HOST", "0.0.0.0")
     port = int(os.environ.get("PORT", "4321"))
-    log.info("serving the job_board API on http://%s:%d", host, port)
+    log.info("serving the job-board API on http://%s:%d", host, port)
     uvicorn.run(
         "job_board.api:app",
         host=host,

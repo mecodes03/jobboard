@@ -17,7 +17,7 @@ log = logging.getLogger("job_board")
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="job_board",
+        prog="job-board",
         description="Scrape job boards and save the results to a timestamped CSV.",
     )
     parser.add_argument("--search-term", default="Software Engineer", help="job title to search for")

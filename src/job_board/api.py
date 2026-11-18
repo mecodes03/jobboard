@@ -1,6 +1,6 @@
 """HTTP API around the scraper.
 
-Run it with ``job_board-api`` (or ``uvicorn job_board.api:app``). The same app is
+Run it with ``job-board-api`` (or ``uvicorn job_board.api:app``). The same app is
 served by the Apify Actor when the platform starts it in Standby mode, so every
 endpoint here is also reachable as the Actor's container URL.
 
@@ -113,7 +113,7 @@ async def require_auth(
 Auth = Annotated[None, Depends(require_auth)]
 
 app = FastAPI(
-    title="job_board",
+    title="job-board",
     version=__version__,
     summary="Scrape public job boards over HTTP.",
     description=(
@@ -164,7 +164,7 @@ async def _report(request: ScrapeRequest) -> ScrapeReport:
 @app.get("/", include_in_schema=False)
 def index() -> dict[str, Any]:
     return {
-        "name": "job_board",
+        "name": "job-board",
         "version": __version__,
         "docs": "/docs",
         "openapi": "/openapi.json",
